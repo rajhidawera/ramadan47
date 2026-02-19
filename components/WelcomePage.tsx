@@ -17,13 +17,15 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({ onEnter }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white">
       <div className="w-full max-w-4xl mx-auto text-center p-8 rounded-lg shadow-2xl bg-white -mt-16">
-        <img src={BANNER_URL} alt="شعار مؤسسة الراجحي الخيرية" className="w-full h-48 object-cover rounded-t-lg mb-6" />
         <div className="p-6">
-          <img src={LOGO_URL} alt="شعار المؤسسة" className="h-20 mx-auto mb-4" />
+          <div className="flex justify-center items-center gap-x-8 mb-8">
+            <img src={LOGO_URL} alt="شعار المؤسسة" className="h-24 object-contain" />
+            <img src={BANNER_URL} alt="شعار برامج رمضان" className="h-24 object-contain rounded-md" />
+          </div>
+
           <h1 className="text-3xl md:text-4xl font-extrabold text-primary mb-2">
             نظام إدارة أنشطة المساجد
           </h1>
-          <p className="text-xl text-secondary font-bold mb-6">رمضان 1447هـ</p>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
             منصة مركزية وفعالة لمتابعة وتسجيل وإدارة جميع الأنشطة الرمضانية في المساجد التابعة للمؤسسة.
           </p>

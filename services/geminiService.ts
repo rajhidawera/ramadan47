@@ -1,4 +1,3 @@
-
 import { GoogleGenAI } from '@google/genai';
 import { Record } from '../types';
 
@@ -20,10 +19,34 @@ export const analyzeDataWithGemini = async (records: Record[]): Promise<string> 
   const dataSummary = records.map(r => ({
     date: r.date,
     mosqueId: r.mosqueId,
-    totalWorshippers: r.tarawihWorshippers + r.qiyamWorshippers + r.fajrWorshippers,
-    iftarMeals: r.iftarMeals,
-    quranStudents: r.quranStudents,
-    dawahBeneficiaries: r.dawahBeneficiaries,
+    worshippers: { male: r.maleWorshippers, female: r.femaleWorshippers },
+    iftar: { actual: r.iftarMealsActual },
+    waterCartons: r.waterCartons,
+    hospitalityBeneficiaries: r.hospitalityBeneficiaries,
+    quranEducation: { 
+      maleStudents: r.maleStudents,
+      malePages: r.maleStudentPages,
+      femaleStudents: r.femaleStudents,
+      femalePages: r.femaleStudentPages,
+    },
+    communityActivities: {
+      volunteers: r.volunteers,
+      competitions: r.competitions,
+      nurseryChildren: r.nurseryChildren,
+      programName: r.communityProgramName,
+      programBeneficiaries: r.communityProgramBeneficiaries,
+    },
+    dawah: {
+      maleTalks: r.maleDawahTalks,
+      femaleTalks: r.femaleDawahTalks,
+      beneficiaries: r.dawahBeneficiaries,
+    },
+    itikaf: {
+      maleParticipants: r.maleItikafParticipants,
+      maleSuhoor: r.maleSuhoorMeals,
+      femaleParticipants: r.femaleItikafParticipants,
+      femaleSuhoor: r.femaleSuhoorMeals,
+    },
     notes: r.notes,
   }));
 
@@ -36,11 +59,11 @@ export const analyzeDataWithGemini = async (records: Record[]): Promise<string> 
 
     بناءً على هذه البيانات، يرجى تقديم تحليل باللغة العربية الفصحى يتضمن النقاط التالية بوضوح:
 
-    1.  **ملخص تنفيذي:** قدم نظرة عامة موجزة عن أداء اليوم، مع ذكر أبرز الأرقام والإنجازات.
-    2.  **مشاكل وتحديات متكررة:** استخرج أي مشاكل أو تحديات محتملة تظهر من خلال البيانات أو الملاحظات المرفقة (مثل "نحتاج دعم" أو أرقام منخفضة بشكل غير طبيعي في مسجد معين).
+    1.  **ملخص تنفيذي:** قدم نظرة عامة موجزة عن أداء اليوم، مع ذكر أبرز الأرقام والإنجازات في مختلف الأنشطة (الصلاة، الإفطار، الحلقات، الأنشطة المجتمعية، إلخ).
+    2.  **مشاكل وتحديات متكررة:** استخرج أي مشاكل أو تحديات محتملة تظهر من خلال البيانات أو الملاحظات المرفقة (مثل "نحتاج دعم"، "انقطاع الكهرباء"، أو أرقام منخفضة بشكل غير طبيعي في مسجد معين).
     3.  **توصيات ذكية:** بناءً على التحليل، قدم توصيات قابلة للتنفيذ لتحسين الأداء في اليوم التالي. على سبيل المثال، إذا كان هناك نقص في وجبات الإفطار في مسجد معين، اقترح إعادة توجيه الموارد. إذا كان عدد المصلين كبيرًا جدًا، اقترح زيادة الاستعدادات.
 
-    اجعل التقرير منظمًا وسهل القراءة.
+    اجعل التقرير منظمًا وسهل القراءة باستخدام العناوين والنقاط.
     `;
 
   try {

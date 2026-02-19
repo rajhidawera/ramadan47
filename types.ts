@@ -1,8 +1,11 @@
-
 export interface Mosque {
   id: string;
   name: string;
-  supervisorPassword?: string;
+}
+
+export interface Day {
+  code: string;
+  label: string;
 }
 
 export enum ReportStatus {
@@ -14,31 +17,53 @@ export enum ReportStatus {
 export interface Record {
   id: string;
   mosqueId: string;
-  date: string; // YYYY-MM-DD
-  supervisorName: string;
-  tarawihWorshippers: number;
-  qiyamWorshippers: number;
-  fajrWorshippers: number;
-  iftarMeals: number;
-  quranCircles: number;
-  quranStudents: number;
-  dawahPrograms: number;
+  date: string; // Hijri string
+  dayCode: string;
+
+  // الصلاة (Prayer)
+  maleWorshippers: number;
+  femaleWorshippers: number;
+
+  // الافطار (Iftar)
+  iftarMealsActual: number;
+
+  // السقيا (Water)
+  waterCartons: number;
+
+  // الضيافة (Hospitality)
+  hospitalityBeneficiaries: number;
+
+  // التعليم وحلقات القرآن الكريم (Quran Education)
+  maleStudents: number;
+  maleStudentPages: number;
+  femaleStudents: number;
+  femaleStudentPages: number;
+
+  // الانشطة المجتمعية (Community Activities)
+  volunteers: number;
+  competitions: number;
+  nurseryChildren: number;
+  communityProgramName: string;
+  communityProgramBeneficiaries: number;
+  communityProgramDescription: string;
+
+  // الكلمات الدعوية (Dawah Talks)
+  maleDawahTalks: number;
+  femaleDawahTalks: number;
   dawahBeneficiaries: number;
-  itikafParticipants: number;
+
+  // الاعتكاف والسحور (Itikaf & Suhoor)
+  maleItikafParticipants: number;
+  maleSuhoorMeals: number;
+  femaleItikafParticipants: number;
+  femaleSuhoorMeals: number;
+
+  // General
+  supervisorsCount: number;
   notes: string;
-  images: string[]; // URLs or base64 strings
+  images: string[];
   status: ReportStatus;
 }
 
-export interface MaintenanceReport {
-  id: string;
-  mosqueId: string;
-  date: string;
-  supervisorName: string;
-  cleaningDone: boolean;
-  maintenanceDone: boolean;
-  needs: string;
-  status: ReportStatus; // Assuming maintenance also has a status
-}
 
 export type UserRole = 'supervisor' | 'admin';

@@ -1,35 +1,30 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { WelcomePage } from './components/WelcomePage';
 import { Dashboard } from './components/Dashboard';
 import { RecordForm } from './components/RecordForm';
-import { MaintenanceForm } from './components/MaintenanceForm';
 import { RecordList } from './components/RecordList';
-import { MaintenanceDashboard } from './components/MaintenanceDashboard';
-import { AdminLoginModal } from './components/AdminLoginModal';
+import { DailyReport } from './components/DailyReport';
 import { Toast } from './components/Toast';
 import { Spinner } from './components/Spinner';
 import { Header } from './components/Header';
-import { Mosque, Record, MaintenanceReport, UserRole, ReportStatus } from './types';
+import { Mosque, Record, UserRole, ReportStatus, Day } from './types';
 import { mosqueApi } from './services/mosqueApi';
 
-type View = 'welcome' | 'dashboard' | 'recordForm' | 'maintenanceForm' | 'recordList' | 'maintenanceList';
+type View = 'welcome' | 'dashboard' | 'recordForm' | 'recordList' | 'dailyReport';
 type ToastMessage = { id: number; message: string; type: 'success' | 'error'; };
 
 const App: React.FC = () => {
   const [isDataLoaded, setIsDataLoaded] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [view, setView] = useState<View>('welcome');
-  const [userRole, setUserRole] = useState<UserRole>('supervisor');
-  const [showAdminModal, setShowAdminModal] = useState<boolean>(false);
+  const [userRole, setUserRole] = useState<UserRole>('admin'); // Default to admin
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   
   const [mosques, setMosques] = useState<Mosque[]>([]);
   const [records, setRecords] = useState<Record[]>([]);
-  const [maintenanceReports, setMaintenanceReports] = useState<MaintenanceReport[]>([]);
+  const [days, setDays] = useState<Day[]>([]);
   
   const [editingRecord, setEditingRecord] = useState<Record | null>(null);
-  const [editingMaintenance, setEditingMaintenance] = useState<MaintenanceReport | null>(null);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToasts(prev => [...prev, { id: Date.now(), message, type }]);
@@ -41,10 +36,10 @@ const App: React.FC = () => {
   const loadAllData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const { mosques, records, maintenanceReports } = await mosqueApi.getAll();
+      const { mosques, records, days } = await mosqueApi.getAll();
       setMosques(mosques);
       setRecords(records);
-      setMaintenanceReports(maintenanceReports);
+      setDays(days);
       setIsDataLoaded(true);
       return true;
     } catch (error) {
@@ -63,11 +58,9 @@ const App: React.FC = () => {
     }
   };
   
-  const handleFormSubmit = async () => {
-    showToast("تم حفظ التقرير بنجاح، جاري تحديث البيانات...", 'success');
-    setView('dashboard');
-    setEditingRecord(null);
-    setEditingMaintenance(null);
+  const handleFormSubmit = async (message: string) => {
+    showToast(message, 'success');
+    // We don't change view, but we reload data to keep state consistent
     await loadAllData();
   };
   
@@ -75,11 +68,6 @@ const App: React.FC = () => {
     setEditingRecord(record);
     setView('recordForm');
   };
-
-  const handleEditMaintenance = (report: MaintenanceReport) => {
-    setEditingMaintenance(report);
-    setView('maintenanceForm');
-  }
 
   const handleUpdateStatus = async (id: string, newStatus: ReportStatus) => {
     setIsLoading(true);
@@ -93,16 +81,11 @@ const App: React.FC = () => {
       setIsLoading(false);
     }
   }
-
-  const handleAdminLogin = (password: string) => {
-    if (password === mosqueApi.getAdminPassword()) {
-      setUserRole('admin');
-      setShowAdminModal(false);
-      showToast('أهلاً بك أيها المسؤول', 'success');
-    } else {
-      showToast('كلمة المرور غير صحيحة', 'error');
-    }
-  };
+  
+  const handleReturnToDashboard = () => {
+    setView('dashboard');
+    setEditingRecord(null);
+  }
 
   const renderContent = () => {
     if (view === 'welcome') {
@@ -115,15 +98,21 @@ const App: React.FC = () => {
 
     switch (view) {
       case 'dashboard':
-        return <Dashboard setView={setView} records={records} maintenanceReports={maintenanceReports} />;
+        return <Dashboard setView={setView} records={records} />;
       case 'recordForm':
-        return <RecordForm mosques={mosques} onSubmit={handleFormSubmit} existingRecord={editingRecord} userRole={userRole} />;
-      case 'maintenanceForm':
-        return <MaintenanceForm mosques={mosques} onSubmit={handleFormSubmit} existingReport={editingMaintenance} />;
+        return <RecordForm 
+                  mosques={mosques} 
+                  days={days}
+                  records={records}
+                  onSubmit={handleFormSubmit} 
+                  onFinish={handleReturnToDashboard}
+                  existingRecord={editingRecord} 
+                  userRole={userRole} 
+                />;
       case 'recordList':
         return <RecordList records={records} mosques={mosques} userRole={userRole} onEdit={handleEditRecord} onUpdateStatus={handleUpdateStatus} />;
-      case 'maintenanceList':
-        return <MaintenanceDashboard reports={maintenanceReports} mosques={mosques} userRole={userRole} onEdit={handleEditMaintenance} onUpdateStatus={() => {}} />;
+      case 'dailyReport':
+        return <DailyReport records={records} days={days} />;
       default:
         return <WelcomePage onEnter={handleEnterPlatform} />;
     }
@@ -132,11 +121,10 @@ const App: React.FC = () => {
   return (
     <div className="bg-light-gray min-h-screen text-gray-800">
       {isLoading && <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"><Spinner /></div>}
-      {view !== 'welcome' && <Header setView={setView} onAdminClick={() => setShowAdminModal(true)} userRole={userRole} />}
+      {view !== 'welcome' && <Header setView={setView} />}
       <main className="p-4 md:p-8">
         {renderContent()}
       </main>
-      {showAdminModal && <AdminLoginModal onClose={() => setShowAdminModal(false)} onLogin={handleAdminLogin} />}
       <div className="fixed bottom-4 left-4 z-50">
         {toasts.map(toast => (
           <Toast key={toast.id} message={toast.message} type={toast.type} onClose={() => setToasts(ts => ts.filter(t => t.id !== toast.id))} />

@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Record, Mosque, UserRole, ReportStatus } from '../types';
 
@@ -29,17 +28,15 @@ export const RecordList: React.FC<RecordListProps> = ({ records, mosques, userRo
     mosques.reduce((acc, mosque) => {
       acc[mosque.id] = mosque.name;
       return acc;
-// Fix: Changed Record<string, string> to { [key: string]: string } to avoid conflict with the imported 'Record' type.
     }, {} as { [key: string]: string }), 
   [mosques]);
   
   const filteredRecords = useMemo(() => 
     records
       .filter(record => 
-        mosqueMap[record.mosqueId]?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.supervisorName.toLowerCase().includes(searchTerm.toLowerCase())
+        mosqueMap[record.mosqueId]?.toLowerCase().includes(searchTerm.toLowerCase())
       )
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+      .sort((a, b) => b.id.localeCompare(a.id)),
     [records, searchTerm, mosqueMap]
   );
 
@@ -48,7 +45,7 @@ export const RecordList: React.FC<RecordListProps> = ({ records, mosques, userRo
       <h2 className="text-2xl font-bold text-primary mb-4">سجل التقارير الميدانية</h2>
       <input 
         type="text"
-        placeholder="ابحث باسم المسجد أو المشرف..."
+        placeholder="ابحث باسم المسجد..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className="w-full p-2 mb-4 border border-gray-300 rounded-md"
@@ -59,7 +56,6 @@ export const RecordList: React.FC<RecordListProps> = ({ records, mosques, userRo
             <tr>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المسجد</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">التاريخ</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المشرف</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
             </tr>
@@ -69,7 +65,6 @@ export const RecordList: React.FC<RecordListProps> = ({ records, mosques, userRo
               <tr key={record.id}>
                 <td className="px-6 py-4 whitespace-nowrap">{mosqueMap[record.mosqueId] || 'غير معروف'}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{record.date}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{record.supervisorName}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(record.status)}`}>
                     {record.status}

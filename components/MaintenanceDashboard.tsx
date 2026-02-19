@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { MaintenanceReport, Mosque, UserRole, ReportStatus } from '../types';
 
@@ -17,7 +16,7 @@ export const MaintenanceDashboard: React.FC<MaintenanceDashboardProps> = ({ repo
     mosques.reduce((acc, mosque) => {
       acc[mosque.id] = mosque.name;
       return acc;
-    }, {} as Record<string, string>), 
+    }, {} as { [key: string]: string }), 
   [mosques]);
 
   const filteredReports = useMemo(() => 

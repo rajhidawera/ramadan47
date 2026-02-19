@@ -2,22 +2,19 @@
 import { GoogleGenAI } from '@google/genai';
 import { Record } from '../types';
 
-const API_KEY = process.env.API_KEY;
-
-if (!API_KEY) {
-  console.warn("API_KEY environment variable not set. AI analysis will not work.");
-}
-
-const ai = new GoogleGenAI({ apiKey: API_KEY });
-
 export const analyzeDataWithGemini = async (records: Record[]): Promise<string> => {
+  const API_KEY = process.env.API_KEY;
+
   if (!API_KEY) {
+    console.warn("API_KEY environment variable not set. AI analysis will not work.");
     return Promise.reject("API key for Gemini is not configured.");
   }
+  
   if (records.length === 0) {
     return "لا توجد بيانات معتمدة كافية للتحليل. يرجى اعتماد بعض التقارير أولاً.";
   }
 
+  const ai = new GoogleGenAI({ apiKey: API_KEY });
   const model = 'gemini-3-flash-preview';
 
   const dataSummary = records.map(r => ({

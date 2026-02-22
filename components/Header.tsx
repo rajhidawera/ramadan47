@@ -2,7 +2,7 @@ import React from 'react';
 import { LOGO_URL } from '../constants';
 
 interface HeaderProps {
-  setView: (view: 'dashboard' | 'recordForm' | 'recordList' | 'dailyReport') => void;
+  setView: (view: 'dashboard' | 'recordForm' | 'recordList' | 'dailyReport' | 'volunteerForm') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ setView }) => {
@@ -19,6 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ setView }) => {
           <button onClick={() => setView('dashboard')} className="text-gray-600 hover:text-primary font-semibold">لوحة التحكم</button>
           <button onClick={() => setView('recordList')} className="text-gray-600 hover:text-primary font-semibold">التقارير الميدانية</button>
           <button onClick={() => setView('dailyReport')} className="text-gray-600 hover:text-primary font-semibold">التقرير اليومي</button>
+          <button onClick={() => setView('volunteerForm')} className="text-gray-600 hover:text-primary font-semibold">تسجيل متطوع</button>
         </nav>
       </div>
     </header>

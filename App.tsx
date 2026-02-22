@@ -7,10 +7,11 @@ import { DailyReport } from './components/DailyReport';
 import { Toast } from './components/Toast';
 import { Spinner } from './components/Spinner';
 import { Header } from './components/Header';
-import { Mosque, Record, UserRole, ReportStatus, Day } from './types';
+import { VolunteerForm } from './components/VolunteerForm';
+import { Mosque, Record, UserRole, ReportStatus, Day, Volunteer } from './types';
 import { mosqueApi } from './services/mosqueApi';
 
-type View = 'welcome' | 'dashboard' | 'recordForm' | 'recordList' | 'dailyReport';
+type View = 'welcome' | 'dashboard' | 'recordForm' | 'recordList' | 'dailyReport' | 'volunteerForm';
 type ToastMessage = { id: number; message: string; type: 'success' | 'error'; };
 
 const App: React.FC = () => {
@@ -23,6 +24,7 @@ const App: React.FC = () => {
   const [mosques, setMosques] = useState<Mosque[]>([]);
   const [records, setRecords] = useState<Record[]>([]);
   const [days, setDays] = useState<Day[]>([]);
+  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   
   const [editingRecord, setEditingRecord] = useState<Record | null>(null);
 
@@ -36,10 +38,11 @@ const App: React.FC = () => {
   const loadAllData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const { mosques, records, days } = await mosqueApi.getAll();
+      const { mosques, records, days, volunteers } = await mosqueApi.getAll();
       setMosques(mosques);
       setRecords(records);
       setDays(days);
+      setVolunteers(volunteers);
       setIsDataLoaded(true);
       return true;
     } catch (error) {
@@ -98,7 +101,7 @@ const App: React.FC = () => {
 
     switch (view) {
       case 'dashboard':
-        return <Dashboard setView={setView} records={records} />;
+        return <Dashboard setView={setView} records={records} volunteers={volunteers} />;
       case 'recordForm':
         return <RecordForm 
                   mosques={mosques} 
@@ -113,6 +116,8 @@ const App: React.FC = () => {
         return <RecordList records={records} mosques={mosques} userRole={userRole} onEdit={handleEditRecord} onUpdateStatus={handleUpdateStatus} />;
       case 'dailyReport':
         return <DailyReport records={records} days={days} />;
+      case 'volunteerForm':
+        return <VolunteerForm onSubmit={handleFormSubmit} onFinish={handleReturnToDashboard} />;
       default:
         return <WelcomePage onEnter={handleEnterPlatform} />;
     }

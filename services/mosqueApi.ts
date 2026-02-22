@@ -1,4 +1,4 @@
-import { Mosque, Record, ReportStatus, Day } from '../types';
+import { Mosque, Record, ReportStatus, Day, Volunteer } from '../types';
 
 const API_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwv98UQDs8EOoRoLPPbILI9uI_HJsdzK3iOtrQu-M_OblJpViJ_c5h4msOrxZgPAWzfLg/exec';
 const ADMIN_PASSWORD = 'admin123';
@@ -14,6 +14,57 @@ const mapApiDayToAppDay = (apiDay: any): Day => ({
   code: apiDay.code_day,
   label: apiDay.label,
 });
+
+// Mapper to convert API volunteer data to app's Volunteer type
+const mapApiVolunteerToAppVolunteer = (apiVol: any): Volunteer => ({
+  id: apiVol.record_id || apiVol.id,
+  fullName: apiVol.الاسم_الرباعي,
+  nationality: apiVol.الجنسية,
+  idNumber: apiVol.رقم_الهوية,
+  profession: apiVol.المهنة,
+  age: Number(apiVol.العمر) || 0,
+  workOrStudyPlace: apiVol.جهة_العمل_او_الدراسة,
+  idExpiryStatus: apiVol.حالة_انتهاء_الهوية,
+  requiresSponsorApproval: apiVol.هل_يتطلب_موافقة_الكفيل,
+  phoneNumber: apiVol.رقم_الجوال,
+  relativePhoneNumber: apiVol.رقم_جوال_قريب,
+  email: apiVol.البريد_الالكتروني,
+  volunteerField: apiVol.المجال_التطوعي,
+  directSupervisor: apiVol.المشرف_المباشر,
+  dailyHours: Number(apiVol.عدد_الساعات_اليومية) || 0,
+  recordVolunteerHours: apiVol.تسجيل_الساعات_التطوعية,
+  futureRecommendation: apiVol.توصية_مستقبلية,
+  notes: apiVol.ملاحظات,
+});
+
+// Mapper to convert app's Volunteer type to a payload for the API
+const mapAppVolunteerToApiPayload = (volData: Omit<Volunteer, 'id'> | Volunteer) => {
+  const payload: any = {
+    الاسم_الرباعي: volData.fullName,
+    الجنسية: volData.nationality,
+    رقم_الهوية: volData.idNumber,
+    المهنة: volData.profession,
+    العمر: volData.age,
+    جهة_العمل_او_الدراسة: volData.workOrStudyPlace,
+    حالة_انتهاء_الهوية: volData.idExpiryStatus,
+    هل_يتطلب_موافقة_الكفيل: volData.requiresSponsorApproval,
+    رقم_الجوال: volData.phoneNumber,
+    رقم_جوال_قريب: volData.relativePhoneNumber,
+    البريد_الالكتروني: volData.email,
+    المجال_التطوعي: volData.volunteerField,
+    المشرف_المباشر: volData.directSupervisor,
+    عدد_الساعات_اليومية: volData.dailyHours,
+    تسجيل_الساعات_التطوعية: volData.recordVolunteerHours,
+    توصية_مستقبلية: volData.futureRecommendation,
+    ملاحظات: volData.notes,
+  };
+
+  if ('id' in volData && volData.id) {
+    payload.record_id = volData.id;
+  }
+
+  return payload;
+};
 
 // Mapper to convert API report data to app's Record type
 const mapApiRecordToAppRecord = (apiRecord: any): Record => {
@@ -100,7 +151,7 @@ const mapAppRecordToApiPayload = (recordData: Omit<Record, 'id'> | Record) => {
 export const mosqueApi = {
   getAdminPassword: () => ADMIN_PASSWORD,
   
-  getAll: async (): Promise<{ mosques: Mosque[]; records: Record[]; days: Day[] }> => {
+  getAll: async (): Promise<{ mosques: Mosque[]; records: Record[]; days: Day[]; volunteers: Volunteer[] }> => {
     try {
         const response = await fetch(API_ENDPOINT);
         if (!response.ok) throw new Error('Network response was not ok');
@@ -110,12 +161,32 @@ export const mosqueApi = {
         const mosques = data.sheets.mosque.map(mapApiMosqueToAppMosque);
         const records = data.sheets.daily_mosque_report.map(mapApiRecordToAppRecord);
         const days = data.sheets.Dayd.map(mapApiDayToAppDay);
+        const volunteers = data.sheets.volunteer ? data.sheets.volunteer.map(mapApiVolunteerToAppVolunteer) : [];
 
-        return { mosques, records, days };
+        return { mosques, records, days, volunteers };
     } catch (error) {
         console.error("API Error fetching all data:", error);
         throw error;
     }
+  },
+
+  saveVolunteer: async (volData: Omit<Volunteer, 'id'>): Promise<Volunteer> => {
+    const payload = {
+        sheet: 'volunteer',
+        ...mapAppVolunteerToApiPayload(volData)
+    };
+    const response = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    });
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message || "Failed to save volunteer");
+    
+    return {
+      ...volData,
+      id: result.record_id || result.id,
+    } as Volunteer;
   },
   
   saveRecord: async (recordData: Omit<Record, 'id'>): Promise<Record> => {

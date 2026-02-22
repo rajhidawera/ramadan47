@@ -65,5 +65,25 @@ export interface Record {
   status: ReportStatus;
 }
 
+export interface Volunteer {
+  id: string;
+  fullName: string;
+  nationality: string;
+  idNumber: string;
+  profession: string;
+  age: number;
+  workOrStudyPlace: string;
+  idExpiryStatus: string;
+  requiresSponsorApproval: string;
+  phoneNumber: string;
+  relativePhoneNumber: string;
+  email: string;
+  volunteerField: string;
+  directSupervisor: string;
+  dailyHours: number;
+  recordVolunteerHours: string;
+  futureRecommendation: string;
+  notes: string;
+}
 
 export type UserRole = 'supervisor' | 'admin';
